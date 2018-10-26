@@ -17,10 +17,10 @@ public class JedisUtils {
 		jedis.geoadd(key, memberCoordinateMap);
 	}
 	
-	public static String findNeighbor(double longitude, double latitude, double radius) {
+	public static String find(double longitude, double latitude) {
 		int i = 1;
 		for (i = 1; i <1000; i*=10) {
-			List<GeoRadiusResponse> rspList = jedis.georadius(key, longitude, latitude, radius, 
+			List<GeoRadiusResponse> rspList = jedis.georadius(key, longitude, latitude, i, 
 					GeoUnit.MI, 
 					GeoRadiusParam.geoRadiusParam().sortAscending());
 			if (rspList != null & !rspList.isEmpty()) {

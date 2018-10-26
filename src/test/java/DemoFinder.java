@@ -1,13 +1,13 @@
-import lzhao.Loader;
+import lzhao.Finder;
 
 
-public class Demo {
+public class DemoFinder {
 
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		Loader loader = new Loader();
+		Finder finder = new Finder();
 		try {
-			loader.load();
+			finder.find();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

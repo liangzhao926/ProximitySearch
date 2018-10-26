@@ -6,17 +6,14 @@ import java.nio.charset.Charset;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.Map;
+
 import com.csvreader.CsvReader;
 
 import redis.clients.jedis.GeoCoordinate;
 
-public class Loader {
-	// Define the logger object for this class
-	//protected final Logger log = LoggerFactory.getLogger(Loader.class);
-
-	public void load() {
+public class Finder {
+	public void find() {
 		
 		try {
 			Instant start = Instant.now();
@@ -31,21 +28,21 @@ public class Loader {
 					int colLat = -1, colLon = -1;
 					for (int i = 0; i < csv.getHeaderCount(); i++) {
 						
-						if ("SITE_LONGITUDE".equals(csv.getHeader(i))) {
+						if ("Longitude".equals(csv.getHeader(i))) {
 							colLon = i;
 							
 						}
-						if ("SITE_LATITUDE".equals(csv.getHeader(i))) {
+						if ("Latitude".equals(csv.getHeader(i))) {
 							colLat = i;
 							
 						}
 					}
 					System.out.printf("Column %d for lat, %d for lon\n", colLat, colLon);
 					
-					HashMap<String, GeoCoordinate> map = new HashMap<String, GeoCoordinate>();
-					List<HashMap<String, GeoCoordinate>> mapList = new LinkedList<HashMap<String, GeoCoordinate>>();
+					Map<String, GeoCoordinate> map = new HashMap<String, GeoCoordinate>();
+					//List<HashMap<String, GeoCoordinate>> mapList = new LinkedList<HashMap<String, GeoCoordinate>>();
 					int i = 0, sub_i = 0;
-					int batchSize = 10000;
+					int batchSize = 1000;//5000;//10000;//100000;
 					while (csv.readRecord()) {
 						GeoCoordinate coord = new GeoCoordinate(
 								Double.valueOf(csv.get(colLon)),
@@ -53,17 +50,22 @@ public class Loader {
 						map.put(String.valueOf(i), coord);
 						i++;sub_i++;
 						if (sub_i >= batchSize) {
-							mapList.add(map);
-							map = new HashMap<String, GeoCoordinate>();
-							sub_i = 0;
+							break;
 						}
 					}
 					Instant endFile = Instant.now();
 					System.out.println(String.valueOf(start.until(endFile, ChronoUnit.MILLIS)));
 					
+					int notFound = 0;
+					Instant beginDb = Instant.now();
 					JedisUtils.add(map);
-					for (HashMap<String, GeoCoordinate> map1 : mapList) {
-					JedisUtils.add(map1);
+					for (Map.Entry<String, GeoCoordinate> entry : map.entrySet()) {
+						
+					String found = JedisUtils.find(entry.getValue().getLongitude(), entry.getValue().getLatitude());
+					if (null == found || found.isEmpty()) {
+						notFound++;
+						
+					}
 					}
 					//add the odds
 					if (!map.isEmpty()) {
@@ -71,7 +73,8 @@ public class Loader {
 					}
 					
 					Instant endDb = Instant.now();
-					System.out.println(String.valueOf(endFile.until(endDb, ChronoUnit.MILLIS)));
+					System.out.println(String.valueOf(beginDb.until(endDb, ChronoUnit.MILLIS)));
+					System.out.printf("%d not found\n", notFound);
 				}
 			}
 		} catch (Exception e) {
@@ -81,7 +84,7 @@ public class Loader {
 	}
 	
 	private static String getFilePath() {
-		String fileName = "foo.csv";
+		String fileName = "foo2.csv";
 		String path = Thread.currentThread().getContextClassLoader().getResource("").toString();
 		if (path.contains("WEB-INF")) {// for Tomcat environment
 			path = path.replace("file:", "");
@@ -91,5 +94,5 @@ public class Loader {
 		}
 		return path;
 	}
-		
+
 }
