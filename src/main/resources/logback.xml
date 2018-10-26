@@ -1,0 +1,33 @@
+<configuration scan="true" scanPeriod="10 seconds">
+
+        <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+                <encoder>
+                        <pattern>%date{ISO8601} [%thread] %-5level %logger{36} - %msg%n
+                        </pattern>
+                </encoder>
+        </appender>
+
+        <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+                <file>./demo.log</file>
+                <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+                        <!-- daily rollover -->
+                        <fileNamePattern>./demo.%d{yyyy-MM-dd}.log</fileNamePattern>
+
+                        <!-- keep 30 days' worth of history -->
+                        <maxHistory>30</maxHistory>
+                </rollingPolicy>
+                <encoder>
+                        <pattern>%date{ISO8601} [%thread] %-5level %logger{36} - %msg%n
+                        </pattern>
+                </encoder>
+        </appender>
+
+        <logger name="lzhao" level="TRACE"/>
+        <logger name="org.apache.http.wire" level="DEBUG"/>
+        <logger name="org.apache.http.headers" level="ERROR"/>
+
+        <root level="ERROR">
+                <appender-ref ref="STDOUT"/>
+                <appender-ref ref="FILE"/>
+        </root>
+</configuration>
