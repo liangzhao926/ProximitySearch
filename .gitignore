@@ -1,9 +1,9 @@
-bin/
-.gradle/
-.classpath/
-.project
-.settings/
+HELP.md
+.gradle
 build/
-gradle/
-gradle*
-.classpath
+bin/
+src/main/java/META-INF/
+.attach_pid*
+!gradle/wrapper/gradle-wrapper.jar
+!**/src/main/**
+!**/src/test/**

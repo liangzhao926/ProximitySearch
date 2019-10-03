@@ -19,9 +19,6 @@ repositories {
 
 dependencies {
 
-    // This dependency is used internally, and not exposed to consumers on their own compile classpath.
-    implementation 'com.google.guava:guava:23.0'
-
 	// https://mvnrepository.com/artifact/net.sourceforge.javacsv/javacsv
 	compile group: 'net.sourceforge.javacsv', name: 'javacsv', version: '2.0'
 	// https://mvnrepository.com/artifact/org.slf4j/slf4j-api
