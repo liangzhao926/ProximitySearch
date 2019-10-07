@@ -4,6 +4,9 @@ build/
 bin/
 src/main/java/META-INF/
 .attach_pid*
+dump.rdb
+.settings/
+
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**
 !**/src/test/**

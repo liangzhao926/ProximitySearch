@@ -25,6 +25,11 @@ dependencies {
 	compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.25'
 	// https://mvnrepository.com/artifact/redis.clients/jedis
 	compile group: 'redis.clients', name: 'jedis', version: '2.9.0'
+	
+	implementation 'com.google.guava:guava:23.+'
+
+	compileOnly 'org.projectlombok:lombok:1.18+'
+	annotationProcessor 'org.projectlombok:lombok:1.18+'
 
     // Use JUnit test framework
     testImplementation 'junit:junit:4.12'
