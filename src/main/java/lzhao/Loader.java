@@ -6,9 +6,7 @@ import java.nio.charset.Charset;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-
+import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,7 +31,6 @@ public class Loader {
 	public void load(String filePath) {
 		
 		try {
-			Instant start = Instant.now();
 			if (Strings.isNullOrEmpty(filePath)) {
 				filePath = getFilePath();
 			}
@@ -65,37 +62,46 @@ public class Loader {
 					System.out.printf("Column %d for lat, %d for lon, %d for eNB ID, %d for Cell ID\n", 
 							colLat, colLon, colEnb, colCell);
 					
-					HashMap<String, GeoCoordinate> map = new HashMap<String, GeoCoordinate>();
-					List<HashMap<String, GeoCoordinate>> mapList = new LinkedList<HashMap<String, GeoCoordinate>>();
-					int i = 0, sub_i = 0, n = 0;
+					Map<String, GeoCoordinate> map = new HashMap<String, GeoCoordinate>();
+					int i = 0;
+					Instant start = Instant.now();
 					while (csv.readRecord()) {
 						GeoCoordinate coord = new GeoCoordinate(
 								Double.valueOf(csv.get(colLon)),
 								Double.valueOf(csv.get(colLat)));
 						map.put(csv.get(colEnb)+":"+csv.get(colCell), coord);
-						i++;sub_i++;
-						if (sub_i >= batchSize) {
-							mapList.add(map);
-							map = new HashMap<String, GeoCoordinate>();
-							sub_i = 0;
+						i++;
+					}
+					Instant endFile = Instant.now();
+					System.out.printf("parsing file: %d entries, storing %d in map, in %s ms\n",
+							i, map.size(),
+							String.valueOf(start.until(endFile, ChronoUnit.MILLIS)));
+					
+					// split the map into smaller ones for geoadd
+					Map<String, GeoCoordinate> map1 = new HashMap<String, GeoCoordinate>();
+					i = 0;
+					int n = 0;
+					Instant startDb = Instant.now();
+
+					for (Map.Entry<String, GeoCoordinate> entry : map.entrySet()) {
+						map1.put(entry.getKey(), entry.getValue());
+						i++;
+						if (i >= batchSize) {
+							JedisUtils.add(map1);
+							i = 0;
+							map1.clear();
 							n++;
 						}
 					}
-					//add the odds
-					if (!map.isEmpty()) {
-						mapList.add(map);
-					}
-					Instant endFile = Instant.now();
-					System.out.printf("parsing file: %d entries in %d maps in %s ms\n",
-							i, n+1,
-							String.valueOf(start.until(endFile, ChronoUnit.MILLIS)));
-					
-					for (HashMap<String, GeoCoordinate> map1 : mapList) {
+					if (!map1.isEmpty()) {
 						JedisUtils.add(map1);
+						n++;
 					}
 					
 					Instant endDb = Instant.now();
-					System.out.println("adding to Redis: "+String.valueOf(endFile.until(endDb, ChronoUnit.MILLIS))+" ms");
+					System.out.printf("adding %d maps to Redis: in %s ms\n",
+							n,
+							String.valueOf(startDb.until(endDb, ChronoUnit.MILLIS))+" ms");
 				}
 			}
 		} catch (Exception e) {

@@ -27,6 +27,8 @@ dependencies {
 	compile group: 'redis.clients', name: 'jedis', version: '2.9.0'
 	
 	implementation 'com.google.guava:guava:23.+'
+	
+	implementation 'com.fasterxml.jackson.core:jackson-databind:2.+'
 
 	compileOnly 'org.projectlombok:lombok:1.18+'
 	annotationProcessor 'org.projectlombok:lombok:1.18+'
